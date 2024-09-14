@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil Məlumatları</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        img {
+            display: block;
+            margin-top: 10px;
+            max-width: 150px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Profil Məlumatları</h1>
+    <form id="profileForm">
+        <label for="profileImage">Profil Şəkilləri (çoxlu seçim):</label>
+        <input type="file" id="profileImage" accept="image/*" multiple><br><br>
+        
+        <label for="firstName">Ad:</label>
+        <input type="text" id="firstName"><br><br>
+        
+        <label for="lastName">Soyad:</label>
+        <input type="text" id="lastName"><br><br>
+        
+        <label for="phoneNumber">Telefon Nömrəsi:</label>
+        <input type="tel" id="phoneNumber"><br><br>
+        
+        <button type="button" onclick="saveProfile()">Yadda saxla</button>
+    </form>
+
+    <h2>Saxlanılmış Məlumatlar</h2>
+    <div>
+        <div id="savedImagesContainer"></div>
+        <p id="savedName"></p>
+        <p id="savedPhone"></p>
+    </div>
+
+    <script>
+        // Profil məlumatlarını sessionStorage-də saxlayan funksiya
+        function saveProfile() {
+            const firstName = document.getElementById('firstName').value;
+            const lastName = document.getElementById('lastName').value;
+            const phoneNumber = document.getElementById('phoneNumber').value;
+            const profileImages = document.getElementById('profileImage').files;
+
+            // Ad və soyadı sessionStorage-də saxla
+            sessionStorage.setItem('firstName', firstName);
+            sessionStorage.setItem('lastName', lastName);
+            sessionStorage.setItem('phoneNumber', phoneNumber);
+
+            // Çoxlu şəkilləri sessionStorage-də saxla
+            if (profileImages.length > 0) {
+                let imageArray = [];
+                for (let i = 0; i < profileImages.length; i++) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        imageArray.push(event.target.result);
+                        sessionStorage.setItem('profileImages', JSON.stringify(imageArray));
+                        displaySavedData();  // Məlumatları göstər
+                    };
+                    reader.readAsDataURL(profileImages[i]);
+                }
+            } else {
+                displaySavedData();
+            }
+        }
+
+        // Saxlanılmış məlumatları göstərən funksiya
+        function displaySavedData() {
+            const savedFirstName = sessionStorage.getItem('firstName');
+            const savedLastName = sessionStorage.getItem('lastName');
+            const savedPhoneNumber = sessionStorage.getItem('phoneNumber');
+            const savedProfileImages = sessionStorage.getItem('profileImages');
+
+            // Ad və soyadı göstər
+            if (savedFirstName || savedLastName) {
+                document.getElementById('savedName').textContent = savedFirstName + ' ' + savedLastName;
+            }
+
+            // Telefon nömrəsini göstər
+            if (savedPhoneNumber) {
+                document.getElementById('savedPhone').textContent = 'Telefon: ' + savedPhoneNumber;
+            }
+
+            // Saxlanmış şəkilləri göstər
+            if (savedProfileImages) {
+                const imagesContainer = document.getElementById('savedImagesContainer');
+                imagesContainer.innerHTML = '';  // Mövcud şəkilləri təmizlə
+                const imageArray = JSON.parse(savedProfileImages);
+                imageArray.forEach(imageSrc => {
+                    const imgElement = document.createElement('img');
+                    imgElement.src = imageSrc;
+                    imagesContainer.appendChild(imgElement);
+                });
+            }
+        }
+
+        // Səhifə yüklənəndə saxlanmış məlumatları göstər
+        window.onload = function() {
+            displaySavedData();
+        };
+    </script>
+
+</body>
+</html>
